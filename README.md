@@ -137,7 +137,7 @@ flowchart LR
 
 房間分配是大家最常問的問題。這裡做成輸入名字就標出房間和室友，不用在表格裡一格一格找。
 
-<p align="center"><img src="assets/images/rooms-framed.png" width="760" alt="房間分配：輸入睿寶之後，ROOM 07 的卡片變成金色，上方顯示室友是南瓜和 Ann"></p>
+<p align="center"><img src="assets/images/rooms-framed.png" width="760" alt="房間分配：輸入睿寶之後，ROOM 1132 的卡片變成金色，上方顯示室友是南瓜和 Ann，以及這間的 Wi-Fi 密碼"></p>
 
 ### 房號解碼器
 

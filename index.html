@@ -476,7 +476,7 @@ a{color:inherit}
         <p class="log" id="log">&nbsp;</p>
         <dl class="gauges hud-t">
           <dt>推力</dt><dd><span class="bar"><i id="thrBar"></i></span><span id="thr">0%</span></dd>
-          <dt>船員</dt><dd><span class="crew" id="crew"></span><span id="crewN">0/17</span></dd>
+          <dt>船員</dt><dd><span class="crew" id="crew"></span><span id="crewN">0/18</span></dd>
         </dl>
       </div>
       <div class="steps">
@@ -570,11 +570,11 @@ a{color:inherit}
 </section>
 
 <section class="sec wrap" id="rooms">
-  <header class="sec-head"><span class="eb hud-t">Cabins</span><h2>房間分配</h2><p>輸入名字，馬上找到你的房間和室友。房號到飯店櫃檯領房卡時才會知道。</p></header>
+  <header class="sec-head"><span class="eb hud-t">Cabins</span><h2>房間分配</h2><p>輸入名字，馬上找到你的房號、室友和 Wi-Fi 密碼。八間都在馬貝雅館 1 樓，面海。</p></header>
   <form class="find" id="findForm" autocomplete="off"><label for="findName">我的名字</label><input id="findName" name="findName" type="text" maxlength="8" placeholder="例如：柏安"></form>
   <p class="find-msg" id="findMsg" role="status"></p>
   <div class="rooms" id="roomGrid"></div>
-  <p class="rooms-note">名字只在你自己的瀏覽器裡比對，不會傳出去。分房若有調整，以行政窗口公告為準。</p>
+  <p class="rooms-note">名字只在你自己的瀏覽器裡比對，不會傳出去。房號是飯店預先安排的，以當天實際排房為準。</p>
 </section>
 
 <section class="sec wrap" id="hotel">
@@ -697,7 +697,7 @@ const PLAN = {
     {t:'18:00', e:'18:30', kind:'go', title:'回到公司', place:'高雄市左營區正心街 49 號（公司後門）', q:'高雄市左營區正心街49號', note:'週五傍晚可能塞車，晚上有約的請把時間抓寬一點。'}
   ]
 };
-const ROOMS = [['Peter'],['建志','靖友'],['柏安','品全'],['旻哲','瑋軒'],['孟庭','峻毅'],['永晴','宇新'],['南瓜','Ann','睿寶'],['琬菁','欣華','姿瑀']];
+const ROOMS = [['1122',['琬菁','欣華','姿瑀']],['1126',['建志','靖友']],['1128',['品全','柏安']],['1130',['Peter','小乙']],['1132',['南瓜','Ann','睿寶']],['1136',['旻哲','瑋軒']],['1138',['孟庭','峻毅']],['1142',['永晴','宇新']]];
 const BAG = [['泳衣泳褲＋泳帽','飯店泳池、Spa 池一定要戴泳帽'],['牙刷牙膏','飯店不提供一次性用品'],['可以弄濕的衣服','越野會飆水，會濕'],['替換衣物＋塑膠袋','裝濕衣服用'],['包鞋','卡丁車、越野不能穿拖鞋'],['拖鞋','海邊、泳池走來走去'],['襪子','進兒童星樂園要穿'],['防曬乳','南部的太陽 11 月還是很曬'],['帽子＋太陽眼鏡','越野、農場都在戶外'],['薄外套','晚上海邊風大'],['身分證・健保卡','入住和保險用'],['個人藥品','暈車藥、過敏藥'],['充電器＋行動電源','拍照會很耗電'],['好心情','這一項最重要']];
 const TALK = ['本船長宣布：這兩天禁止討論 bug。','耍廢？不，是耍「費」。好好玩就對了。','泳帽記得帶，沒戴不能下水。','本船長的泳圈不外借。','再戳我，我就把你的行李丟下船。'];
 const ICON = {
@@ -834,7 +834,7 @@ function mark(){
   const ready = step >= 3 && !launched; launchBtn.classList.toggle('locked', step < 3); launchBtn.classList.toggle('ready', ready); $('#launchHint').textContent = step < 3 ? '先完成三步' : '按住不放';
 }
 function ripple(btn, ev){ const r = btn.getBoundingClientRect(), i = document.createElement('i'); i.className = 'ripple'; i.style.left = ((ev && ev.clientX ? ev.clientX : r.left + r.width / 2) - r.left) + 'px'; i.style.top = ((ev && ev.clientY ? ev.clientY : r.top + r.height / 2) - r.top) + 'px'; btn.appendChild(i); setTimeout(() => i.remove(), 650); }
-const LINES = ['船員們，歡迎登上南瓜號。目的地：地球，墾丁。先按「啟動引擎」。','引擎點火，推力全開。接著「設定航線」，把準星對準地球。','航線鎖定，前方就是地球。第三步，全員「繫安全帶」。','17 位船員全部就位。按住「曲速跳躍」不要放，蓄滿就出發！'];
+const LINES = ['船員們，歡迎登上南瓜號。目的地：地球，墾丁。先按「啟動引擎」。','引擎點火，推力全開。接著「設定航線」，把準星對準地球。','航線鎖定，前方就是地球。第三步，全員「繫安全帶」。','18 位船員全部就位。按住「曲速跳躍」不要放，蓄滿就出發！'];
 const HINT = ['等等，要先「啟動引擎」。','航線還沒設定，先按「設定航線」。','安全帶還沒繫，先按「繫安全帶」。'];
 async function doStep(i, ev){
   if (busy || launched) return; const b = stepsEl[i];
@@ -854,7 +854,7 @@ async function doStep(i, ev){
   }
   if (i === 2) {
     const dots = $$('#crew i'); type('船員就位中……');
-    for (let k = 0; k < dots.length; k++) { dots[k].classList.add('on'); $('#crewN').textContent = (k + 1) + '/17'; sfx.belt(k); await wait(55); }
+    for (let k = 0; k < dots.length; k++) { dots[k].classList.add('on'); $('#crewN').textContent = (k + 1) + '/18'; sfx.belt(k); await wait(55); }
     sfx.beltDone(); await wait(300);
   }
   step = i + 1; mark(); type(LINES[step]); busy = false;
@@ -938,8 +938,8 @@ function closeShow(viaWipe){
 function openShow(){
   showOpen = true; step = 0; busy = false; launched = false; charge = 0; holding = false; auto = false; taps = 0; warp = 0; fxLoop.v = 0; stars = [];
   sc.className = 'scene s-cockpit'; cam.getAnimations().forEach(a => a.cancel()); cam.style.animation = ''; cam.style.transformOrigin = '';
-  stepsEl.forEach(b => b.classList.remove('on','next','locked')); $('#count').innerHTML = ''; $('#thrBar').style.width = '0'; $('#thr').textContent = '0%'; $('#crewN').textContent = '0/17';
-  $('#crew').innerHTML = '<i></i>'.repeat(17); launchBtn.style.setProperty('--p', 0); sfx.waves(false);
+  stepsEl.forEach(b => b.classList.remove('on','next','locked')); $('#count').innerHTML = ''; $('#thrBar').style.width = '0'; $('#thr').textContent = '0%'; $('#crewN').textContent = '0/18';
+  $('#crew').innerHTML = '<i></i>'.repeat(18); launchBtn.style.setProperty('--p', 0); sfx.waves(false);
   show.hidden = false; $('#skipBtn').hidden = false; show.style.opacity = ''; lockScroll(true); scene('scCockpit'); layoutFx(); mark();
   cancelAnimationFrame(fxRaf); fxLoop.t = 0; fxRaf = requestAnimationFrame(fxLoop);
   setTimeout(() => type(LINES[0]), 450);
@@ -1001,19 +1001,20 @@ $('#spotGrid').addEventListener('keydown', e => { const v = e.target.closest('.s
 $('#creditList').innerHTML = ['怒錨船長與場景插圖：南瓜虛擬科技自製（《Quantaar》角色）', ...Object.values(SPOTS).flatMap(s => s.credits || [])].map(c => `<li>${c}</li>`).join('');
 
 /* ========== 房間 ========== */
-$('#roomGrid').innerHTML = ROOMS.map((r, i) => `<article class="card room" data-i="${i}"><div class="room-h"><b>ROOM ${pad(i + 1)}</b><small>${r.length} 人房</small></div><div class="names">${r.map(n => `<span>${esc(n)}</span>`).join('')}</div></article>`).join('');
+const HALL = {0:'普羅館（藍色房卡）', 1:'馬貝雅館（粉色房卡）', 2:'波西塔諾館（橘色房卡）'};
+const roomInfo = no => ({ floor: +no[0], hall: HALL[+no[1]], view: +no.slice(2) % 2 ? '山景' : '海景' });
+$('#roomGrid').innerHTML = ROOMS.map(([no, who], i) => { const r = roomInfo(no); return `<article class="card room" data-i="${i}"><div class="room-h"><b>ROOM ${no}</b><small>${r.hall.slice(0, 4)}・${r.view}・${who.length} 人</small></div><div class="names">${who.map(n => `<span>${esc(n)}</span>`).join('')}</div></article>`; }).join('');
 const findName = $('#findName'); let lastHit = -1;
 function findRoom(silent){ const q = findName.value.trim(); st.name = q; save(); let hit = -1, who = '';
-  if (q.length >= 2) { const ql = q.toLowerCase(); ROOMS.forEach((r, i) => r.forEach(n => { const nl = n.toLowerCase(); if (hit < 0 && (nl.includes(ql) || ql.includes(nl))) { hit = i; who = n; } })); }
+  if (q.length >= 2) { const ql = q.toLowerCase(); ROOMS.forEach(([, r], i) => r.forEach(n => { const nl = n.toLowerCase(); if (hit < 0 && (nl.includes(ql) || ql.includes(nl))) { hit = i; who = n; } })); }
   $$('.room').forEach((el, i) => { el.classList.toggle('me', i === hit); el.querySelectorAll('.names span').forEach(sp => sp.classList.toggle('hit', i === hit && sp.textContent === who)); });
   const msg = $('#findMsg');
-  if (hit >= 0) { const mates = ROOMS[hit].filter(n => n !== who); msg.textContent = mates.length ? `${who}，你在 ROOM ${pad(hit + 1)}，室友是 ${mates.join('、')}。` : `${who}，你在 ROOM ${pad(hit + 1)}，一個人獨享整間。`; if (!silent && hit !== lastHit) sfx.found(); }
+  if (hit >= 0) { const [no, all] = ROOMS[hit], r = roomInfo(no), mates = all.filter(n => n !== who); msg.innerHTML = `${esc(who)}，你住 <b>${no}</b>（${r.hall.slice(0, 4)} ${r.floor} 樓・${r.view}），${mates.length ? '室友是 ' + mates.map(esc).join('、') : '一個人獨享整間'}。<br>Wi-Fi 找「${no}」，密碼 <b>${no}${no}</b>。`; if (!silent && hit !== lastHit) sfx.found(); }
   else msg.textContent = q.length >= 2 ? '找不到這個名字，試試看名字的後兩個字，或你的英文名。' : '';
   lastHit = hit; }
 findName.value = st.name || ''; findName.addEventListener('input', () => { ac(); findRoom(false); }); $('#findForm').addEventListener('submit', e => e.preventDefault()); findRoom(true);
 
 /* ========== 房號解碼器 ========== */
-const HALL = {0:'普羅館（藍色房卡）', 1:'馬貝雅館（粉色房卡）', 2:'波西塔諾館（橘色房卡）'};
 $('#roomNo').addEventListener('input', e => { const v = e.target.value.replace(/\D/g, '').slice(0, 4); e.target.value = v; const out = $('#decOut');
   if (v.length < 4) { out.textContent = '第一碼是樓層，第二碼是館別，後兩碼單數山景、雙數海景。'; return; }
   const fl = +v[0], hall = HALL[+v[1]], n = +v.slice(2);
