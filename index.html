@@ -723,7 +723,8 @@ const toastEl = $('#toast'); let toastT = 0;
 function toast(msg){ toastEl.textContent = msg; toastEl.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('on'), 2400); }
 
 /* ========== 音效引擎（WebAudio 即時合成；主音量→壓縮器，另有一條殘響） ========== */
-const A = {ctx:null, out:null, rev:null, noise:null, eng:null, chg:null, amb:null};
+const A = {ctx:null, out:null, rev:null, noise:null, eng:null, chg:null, amb:null, bgm:null, bgmOn:false};
+const BGM_VOL = .08; // 背景音樂音量：要更小聲就調低
 function ac(){
   if (!st.sound) return null;
   if (!A.ctx) {
@@ -783,15 +784,21 @@ const sfx = {
   bubble(){ tone(520, {d:.08, v:.09, to:900}); tone(900, {t:.07, d:.14, v:.06, to:1300, rev:.3}); },
   page(){ mar(783.99, 0, .1); mar(1046.5, .09, .1); },
   found(){ [659.25, 783.99, 1046.5, 1318.51].forEach((f, i) => mar(f, i * .08, .14)); },
+  bgm(on){
+    if (!on) { A.bgmOn = false; if (!A.bgm || !A.ctx) return; const {el, g} = A.bgm; g.gain.setTargetAtTime(.0001, A.ctx.currentTime, .3); setTimeout(() => { if (!A.bgmOn) el.pause(); }, 1200); return; }
+    const c = ac(); if (!c) return; A.bgmOn = true;
+    if (!A.bgm) { const el = new Audio('img/bgm.mp4'); el.loop = true; el.preload = 'auto'; const g = c.createGain(); g.gain.value = .0001; c.createMediaElementSource(el).connect(g).connect(A.out); A.bgm = {el, g}; }
+    const {el, g} = A.bgm; el.play().catch(() => {}); g.gain.cancelScheduledValues(c.currentTime); g.gain.setTargetAtTime(BGM_VOL, c.currentTime, 1.2); },
   waves(on){ const c = ac(); if (!c) return;
     if (on && !A.amb) { const s = c.createBufferSource(); s.buffer = A.noise; s.loop = true; const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 620; const g = c.createGain(); g.gain.value = .022; const lfo = c.createOscillator(); lfo.frequency.value = .11; const depth = c.createGain(); depth.gain.value = .018; lfo.connect(depth).connect(g.gain); const lfo2 = c.createOscillator(); lfo2.frequency.value = .07; const d2 = c.createGain(); d2.gain.value = 260; lfo2.connect(d2).connect(lp.frequency);
       s.connect(lp).connect(g).connect(A.out); s.start(); lfo.start(); lfo2.start(); A.amb = {s, g, lfo, lfo2}; }
     if (!on && A.amb) { const m = A.amb; A.amb = null; m.g.gain.setTargetAtTime(.0001, c.currentTime, .3); setTimeout(() => { try { m.s.stop(); m.lfo.stop(); m.lfo2.stop(); } catch (_) {} }, 1500); } }
 };
 const soundBtn = $('#soundBtn');
-function renderSound(){ soundBtn.setAttribute('aria-pressed', String(st.sound)); soundBtn.title = st.sound ? '關閉音效與海浪聲' : '開啟音效與海浪聲';
+function renderSound(){ soundBtn.setAttribute('aria-pressed', String(st.sound)); soundBtn.title = st.sound ? '關閉音樂與音效' : '開啟音樂與音效';
   soundBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/>' + (st.sound ? '<path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.500 8.500 0 0 1 0 12"/>' : '<path d="M17 9l5 6M22 9l-5 6"/>') + '</svg>'; }
-soundBtn.addEventListener('click', () => { st.sound = !st.sound; save(); renderSound(); if (st.sound) { sfx.drop(); if (!showOpen) sfx.waves(true); } else if (A.ctx) { A.amb = null; A.eng = null; A.ctx.suspend(); } });
+soundBtn.addEventListener('click', () => { st.sound = !st.sound; save(); renderSound(); if (st.sound) { sfx.drop(); if (!showOpen) { sfx.waves(true); sfx.bgm(true); } } else { A.bgmOn = false; if (A.bgm) A.bgm.el.pause(); if (A.ctx) { A.amb = null; A.eng = null; A.ctx.suspend(); } } });
+document.addEventListener('visibilitychange', () => { if (!A.bgm) return; if (document.hidden) A.bgm.el.pause(); else if (A.bgmOn && st.sound) { ac(); A.bgm.el.play().catch(() => {}); } });
 renderSound();
 
 function confetti(){
@@ -928,7 +935,7 @@ function runAtmo(dur){ return new Promise(done => {
     if (k < 1) requestAnimationFrame(f); else done(); })(t0); }); }
 
 function closeShow(viaWipe){
-  if (!showOpen) return; showOpen = false; clearInterval(typeT); cancelAnimationFrame(fxRaf); sfx.engineLoop(false); sfx.charge(false);
+  if (!showOpen) return; showOpen = false; clearInterval(typeT); cancelAnimationFrame(fxRaf); sfx.engineLoop(false); sfx.charge(false); sfx.bgm(true);
   const fin = () => { show.hidden = true; lockScroll(false); window.scrollTo(0, 0); sfx.waves(true); setTimeout(() => hop($('#heroCap')), 700); };
   if (viaWipe && !reduce) { const w = $('#wipe'); w.classList.remove('go'); void w.offsetWidth; w.classList.add('go'); hiss({d:1.3, v:.16, type:'lowpass', f0:500, f1:2600, a:.5, rev:.5}); setTimeout(fin, 720); setTimeout(() => w.classList.remove('go'), 1600); }
   else { show.style.opacity = '0'; setTimeout(() => { fin(); show.style.opacity = ''; }, 450); }
@@ -937,7 +944,7 @@ function openShow(){
   showOpen = true; step = 0; busy = false; launched = false; charge = 0; holding = false; auto = false; taps = 0; warp = 0; fxLoop.v = 0; stars = [];
   sc.className = 'scene s-cockpit'; cam.getAnimations().forEach(a => a.cancel()); cam.style.animation = ''; cam.style.transformOrigin = '';
   stepsEl.forEach(b => b.classList.remove('on','next','locked')); $('#count').innerHTML = ''; $('#thrBar').style.width = '0'; $('#thr').textContent = '0%'; $('#crewN').textContent = '0/18';
-  $('#crew').innerHTML = '<i></i>'.repeat(18); launchBtn.style.setProperty('--p', 0); sfx.waves(false);
+  $('#crew').innerHTML = '<i></i>'.repeat(18); launchBtn.style.setProperty('--p', 0); sfx.waves(false); sfx.bgm(false);
   show.hidden = false; $('#skipBtn').hidden = false; show.style.opacity = ''; lockScroll(true); scene('scCockpit'); layoutFx(); mark();
   cancelAnimationFrame(fxRaf); fxLoop.t = 0; fxRaf = requestAnimationFrame(fxLoop);
   setTimeout(() => type(LINES[0]), 450);
@@ -947,7 +954,9 @@ $('#landBtn').addEventListener('click', () => { ac(); sfx.drop(); closeShow(true
 $('#replayBtn').addEventListener('click', openShow);
 $('#replayTop').addEventListener('click', openShow);
 const startHash = location.hash && location.hash !== '#home' ? document.getElementById(location.hash.slice(1)) : null;
-if (startHash) { show.hidden = true; showOpen = false; } else openShow();
+if (startHash) { show.hidden = true; showOpen = false;
+  const wake = () => { removeEventListener('pointerdown', wake); removeEventListener('keydown', wake); if (!showOpen && st.sound) { sfx.waves(true); sfx.bgm(true); } };
+  addEventListener('pointerdown', wake); addEventListener('keydown', wake); } else openShow();
 
 /* ========== 倒數 ========== */
 const T0 = Date.parse('2026-11-12T09:00:00+08:00'), T1 = Date.parse('2026-11-13T18:30:00+08:00'), pad = n => String(n).padStart(2, '0');
